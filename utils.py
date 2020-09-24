@@ -47,7 +47,7 @@ def to_square(polygon):
     # get the centroid
     centroid = [(maxx+minx)/2, (maxy+miny)/2]
     # get the diagonal
-    diagonal = max(min_size, sqrt((maxx-minx)**2+(maxy-miny)**2)
+    diagonal = max(min_size, sqrt((maxx-minx)**2+(maxy-miny)**2))
     
     return Point(centroid).buffer(diagonal/2, cap_style=3)
 
