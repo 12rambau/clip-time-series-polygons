@@ -35,36 +35,42 @@ def createPDF(file, df, bands, sources, output):
     drive_handler = gdrive()
     
     #create a multipolygon mask 
-    ee_multiPolygon = ee.Geometry.MultiPolygon(df['ee_geometry'].tolist()).dissolve(maxError=100)           
+    #ee_multiPolygon = ee.Geometry.MultiPolygon(df['ee_geometry'].tolist()).dissolve(maxError=100)           
             
     
     #create a filename list 
     descriptions = {}
     for year in range(start_year, end_year + 1):
-        descriptions[year] = '{}_{}_{}'.format(filename, name_bands, year)
+        descriptions[year] = {}
+        for index, row in df.iterrows():
+            descriptions[year][row['id']] = '{}_{}_{}_pt_{}'.format(filename, name_bands, year, row['id'])
     
     #load all the data in gdrive 
     satellites = {} #contain the names of the used satellites
     for year in range(start_year, end_year + 1):
+        for index, row in df.iterrows():
             
-        image, satellites[year] = getImage(sources, bands, ee_multiPolygon, year)
+            image, satellites[year] = getImage(sources, bands, row['ee_geometry'], year)
         
-        task_config = {
-            'image':image,
-            'description': descriptions[year],
-            'scale': 30,
-            'region': ee_multiPolygon,
-            'maxPixels': 10e12
-        }
+            # TODO launch the export if the file doesn't exist or the task is not running
+        
+            task_config = {
+                'image':image,
+                'description': descriptions[year][row['id']],
+                'scale': 30,
+                'region': row['ee_geometry'],
+                'maxPixels': 10e12
+            }
             
-        task = ee.batch.Export.image.toDrive(**task_config)
-        task.start()
-        output.add_live_msg('exporting year: {}'.format(year))
+            task = ee.batch.Export.image.toDrive(**task_config)
+            task.start()
+            output.add_live_msg('exporting year {} for point {}'.format(year, row['id']))
     
     #check the exportation evolution 
     task_list = []
     for year in range(start_year, end_year + 1):
-        task_list.append(descriptions[year])
+        for index, row in df.iterrows():
+            task_list.append(descriptions[year][row['id']])
             
     state = gee.custom_wait_for_completion(task_list, output)
     output.add_live_msg('Export to drive finished', 'success')
@@ -74,7 +80,8 @@ def createPDF(file, df, bands, sources, output):
     #retreive all the file ids 
     filesId = []
     for year in range(start_year, end_year + 1):
-        filesId += drive_handler.get_files(descriptions[year])
+        for index, row in df.iterrows():
+            filesId += drive_handler.get_files(descriptions[year][row['id']])
     
     #download the files   
     output.add_live_msg('Download files')
@@ -103,16 +110,17 @@ def createPDF(file, df, bands, sources, output):
             for year in range(start_year, end_year + 1):
                 
                 #laod the file 
-                file = getTmpDir() + descriptions[year] + '.tif'
+                file = getTmpDir() + descriptions[year][row['id']] + '.tif'
                 
                 #create the tmp tif image cuted to buffer size
-                tmp_file = getTmpDir() + descriptions[year] + '_pt_{}.tif'.format(row['id'])
+                #tmp_file = getTmpDir() + descriptions[year] + '_pt_{}.tif'.format(row['id'])
                 
                 #crop the image
-                gdal.Warp(tmp_file, file, outputBounds=row['geometry'].bounds)
+                #gdal.Warp(tmp_file, file, outputBounds=row['geometry'].bounds)
                 
     
-                with rio.open(tmp_file) as f:
+                #with rio.open(tmp_file) as f:
+                with rio.open(file) as f:
                     data = f.read([1, 2, 3], masked=True)
                 
                 bands = [] 
@@ -144,7 +152,7 @@ def createPDF(file, df, bands, sources, output):
             
                 #delete the tmp file
                 #done on the fly to not exceed sepal memory limits
-                os.remove(tmp_file)
+                #os.remove(tmp_file)
             
             
             #finish the line with empty plots 
