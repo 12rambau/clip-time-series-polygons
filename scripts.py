@@ -14,6 +14,7 @@ import gee
 from sepal_ui.scripts import gee as gs
 
 from utils import *
+from parameters import polygon_color
 
 ee.Initialize()
 
@@ -150,7 +151,7 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
                 i = year - start_year
                 ax = axes[getPositionPdf(i)[0], getPositionPdf(i)[1]]
                 ax.imshow(data, interpolation='nearest', extent=[x_min, x_max, y_min, y_max])
-                ax.plot(x_polygon, y_polygon, color='red')
+                ax.plot(x_polygon, y_polygon, color=polygon_color)
                 ax.set_title(str(year) + ' ' + getShortname(satellites[year]), x=.0, y=.9, fontsize='small', backgroundcolor='white', ha='left')
                 ax.axis('off')
                 ax.set_aspect('equal', 'box')            

@@ -198,7 +198,7 @@ def getImage(sources, bands, mask, year):
             satellite = satelliteId
             break
             
-    clip = dataset.median().clip(mask)
+    clip = dataset.median().clip(mask).select(getAvailableBands()[bands][satelliteId])
     
     return (clip, satelliteId)
     
