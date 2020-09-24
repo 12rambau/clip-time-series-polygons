@@ -17,7 +17,7 @@ from utils import *
 
 ee.Initialize()
 
-def createPDF(file, df, bands, sources, output):
+def createPDF(file, df, raw_polygons, bands, sources, output):
     
     #get the filename
     filename = Path(file).stem
@@ -44,16 +44,20 @@ def createPDF(file, df, bands, sources, output):
     
     #load all the data in gdrive 
     satellites = {} #contain the names of the used satellites
+    task_list = []
     for year in range(start_year, end_year + 1):
         for index, row in df.iterrows():
         
-            #launch the export if the task does not exist and it's not running
+            #launch it only if the file is not in tmp, or in gdrive
             task_name = descriptions[year][row['id']]
-            if gs.isTask(task_name):
-                state = gs.isTask(task_name).state
-                if not (state == 'RUNNING' and state == 'FAILED'): 
-                    
-                    image, satellites[year] = getImage(sources, bands, row['ee_geometry'], year)
+            file = getTmpDir() + task_name + '.tif'
+            
+            image, satellites[year] = getImage(sources, bands, row['ee_geometry'], year)
+            
+            
+            output.add_live_msg('exporting year {} for point {}'.format(year, row['id']))
+            if not os.path.isfile(file):
+                if drive_handler.get_files(task_name) == []:
                     
                     task_config = {
                         'image':image,
@@ -66,24 +70,26 @@ def createPDF(file, df, bands, sources, output):
                     task = ee.batch.Export.image.toDrive(**task_config)
                     task.start()
                     
-            output.add_live_msg('exporting year {} for point {}'.format(year, row['id']))
+                    task_list.append(task_name)
+                    
     
-    #check the exportation evolution 
-    task_list = []
-    for year in range(start_year, end_year + 1):
-        for index, row in df.iterrows():
-            task_list.append(descriptions[year][row['id']])
-            
+    #check the exportation evolution
     state = gee.custom_wait_for_completion(task_list, output)
     output.add_live_msg('Export to drive finished', 'success')
     time.sleep(2)
     
-    output.add_live_msg('Retreive to sepal')
+    output.add_live_msg('Retrieve to sepal')
+    
     #retreive all the file ids 
     filesId = []
     for year in range(start_year, end_year + 1):
         for index, row in df.iterrows():
-            filesId += drive_handler.get_files(descriptions[year][row['id']])
+            
+            task_name = descriptions[year][row['id']]
+            file = getTmpDir() + task_name + '.tif'
+            
+            if not os.path.isfile(file):
+                filesId += drive_handler.get_files(task_name)
     
     #download the files   
     output.add_live_msg('Download files')
@@ -117,6 +123,7 @@ def createPDF(file, df, bands, sources, output):
                 #with rio.open(tmp_file) as f:
                 with rio.open(file) as f:
                     data = f.read([1, 2, 3], masked=True)
+                    x_min, y_min, x_max, y_max = list(f.bounds)
                 
                 bands = [] 
                 for i in range(3):
@@ -137,10 +144,13 @@ def createPDF(file, df, bands, sources, output):
                 data = data/3000
                 data = data.clip(0, 1)
                 data = np.transpose(data,[1,2,0])
+                
+                x_polygon, y_polygon = raw_polygons.iloc[index]['geometry'].exterior.coords.xy
             
                 i = year - start_year
                 ax = axes[getPositionPdf(i)[0], getPositionPdf(i)[1]]
-                ax.imshow(data, interpolation='nearest')
+                ax.imshow(data, interpolation='nearest', extent=[x_min, x_max, y_min, y_max])
+                ax.plot(x_polygon, y_polygon, color='red')
                 ax.set_title(str(year) + ' ' + getShortname(satellites[year]), x=.0, y=.9, fontsize='small', backgroundcolor='white', ha='left')
                 ax.axis('off')
                 ax.set_aspect('equal', 'box')            
@@ -159,7 +169,7 @@ def createPDF(file, df, bands, sources, output):
             plt.close()
             
     #flush the tmp repository 
-    shutil.rmtree(getTmpDir())
+    #shutil.rmtree(getTmpDir())
     
     output.add_live_msg('PDF output finished', 'success')
     
