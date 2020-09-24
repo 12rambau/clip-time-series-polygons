@@ -11,6 +11,7 @@ import rasterio as rio
 import numpy as np
 import gdal
 import gee 
+from sepal_ui.scripts import gee as gs
 
 from utils import *
 
@@ -32,11 +33,7 @@ def createPDF(file, df, bands, sources, output):
         return pdf_file
     
     #start the drive handler 
-    drive_handler = gdrive()
-    
-    #create a multipolygon mask 
-    #ee_multiPolygon = ee.Geometry.MultiPolygon(df['ee_geometry'].tolist()).dissolve(maxError=100)           
-            
+    drive_handler = gdrive() 
     
     #create a filename list 
     descriptions = {}
@@ -49,21 +46,26 @@ def createPDF(file, df, bands, sources, output):
     satellites = {} #contain the names of the used satellites
     for year in range(start_year, end_year + 1):
         for index, row in df.iterrows():
-            
-            image, satellites[year] = getImage(sources, bands, row['ee_geometry'], year)
         
-            # TODO launch the export if the file doesn't exist or the task is not running
-        
-            task_config = {
-                'image':image,
-                'description': descriptions[year][row['id']],
-                'scale': 30,
-                'region': row['ee_geometry'],
-                'maxPixels': 10e12
-            }
+            #launch the export if the task does not exist and it's not running
+            task_name = descriptions[year][row['id']]
+            if gs.isTask(task_name):
+                state = gs.isTask(task_name).state
+                if not (state == 'RUNNING' and state == 'FAILED'): 
+                    
+                    image, satellites[year] = getImage(sources, bands, row['ee_geometry'], year)
+                    
+                    task_config = {
+                        'image':image,
+                        'description': task_name,
+                        'scale': 30,
+                        'region': row['ee_geometry'],
+                        'maxPixels': 10e12
+                    }
             
-            task = ee.batch.Export.image.toDrive(**task_config)
-            task.start()
+                    task = ee.batch.Export.image.toDrive(**task_config)
+                    task.start()
+                    
             output.add_live_msg('exporting year {} for point {}'.format(year, row['id']))
     
     #check the exportation evolution 
@@ -110,14 +112,7 @@ def createPDF(file, df, bands, sources, output):
             for year in range(start_year, end_year + 1):
                 
                 #laod the file 
-                file = getTmpDir() + descriptions[year][row['id']] + '.tif'
-                
-                #create the tmp tif image cuted to buffer size
-                #tmp_file = getTmpDir() + descriptions[year] + '_pt_{}.tif'.format(row['id'])
-                
-                #crop the image
-                #gdal.Warp(tmp_file, file, outputBounds=row['geometry'].bounds)
-                
+                file = getTmpDir() + descriptions[year][row['id']] + '.tif'                
     
                 #with rio.open(tmp_file) as f:
                 with rio.open(file) as f:
@@ -148,12 +143,7 @@ def createPDF(file, df, bands, sources, output):
                 ax.imshow(data, interpolation='nearest')
                 ax.set_title(str(year) + ' ' + getShortname(satellites[year]), x=.0, y=.9, fontsize='small', backgroundcolor='white', ha='left')
                 ax.axis('off')
-                ax.set_aspect('equal', 'box')
-            
-                #delete the tmp file
-                #done on the fly to not exceed sepal memory limits
-                #os.remove(tmp_file)
-            
+                ax.set_aspect('equal', 'box')            
             
             #finish the line with empty plots 
             start = end_year - start_year
