@@ -2,7 +2,7 @@
 
 create a clip time series for a list of polygons
 
-![clip](./img/clip.png)
+![clip](./img/clip_nir_red_green.png)
 
 
 ## Usage
