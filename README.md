@@ -2,7 +2,9 @@
 
 create a clip time series for a list of polygons.
 Each clip will be a square of a minimum 2km of side surounding the given polygon.
-The user will be able to choose the band combo, the initial shapes, and the color he wants to use to display the polygon (red would be unfortunate in Nir, red, Green for example)
+The user will be able to choose the band combo, the initial shapes, and the color he wants to use to display the polygon (red would be unfortunate in Nir, red, Green for example).
+
+> :warning: Note that to use this script you need to be connected to your own google account. You'll get an error if you try to launch it from the Google account of SEPAL.
 
 ![clip](./img/clip_nir_red_green.png)
 
