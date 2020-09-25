@@ -41,8 +41,8 @@ def to_square(polygon):
     
     minx, miny, maxx, maxy = polygon.bounds
     
-    #2km in latitude (appro)
-    min_size = 0.018
+    #1km in latitude (appro)
+    min_size = 0.009
     
     # get the centroid
     centroid = [(maxx+minx)/2, (maxy+miny)/2]
