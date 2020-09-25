@@ -14,7 +14,7 @@ import gee
 from sepal_ui.scripts import gee as gs
 
 from utils import *
-from parameters import polygon_color
+from parameters import *
 
 ee.Initialize()
 
@@ -116,6 +116,7 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
             fig.suptitle(page_title, fontsize=16, fontweight ="bold")
             
             #display the images in a fig and export it as a pdf page
+            cpt = 0
             for year in range(start_year, end_year + 1):
                 
                 #laod the file 
@@ -148,21 +149,22 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
                 
                 x_polygon, y_polygon = raw_polygons.iloc[index]['geometry'].exterior.coords.xy
             
-                i = year - start_year
-                ax = axes[getPositionPdf(i)[0], getPositionPdf(i)[1]]
+                ax = axes[getPositionPdf(cpt)[0], getPositionPdf(cpt)[1]]
                 ax.imshow(data, interpolation='nearest', extent=[x_min, x_max, y_min, y_max])
                 ax.plot(x_polygon, y_polygon, color=polygon_color)
                 ax.set_title(str(year) + ' ' + getShortname(satellites[year]), x=.0, y=.9, fontsize='small', backgroundcolor='white', ha='left')
                 ax.axis('off')
-                ax.set_aspect('equal', 'box')            
+                ax.set_aspect('equal', 'box') 
+                
+                cpt += 1
             
             #finish the line with empty plots 
-            start = end_year - start_year
-            for i in range(5-(start+1)%5):
-                index = start + 1 + i
-                ax = axes[getPositionPdf(index)[0], getPositionPdf(index)[1]]
+            while cpt < nb_line*nb_col:
+                ax = axes[getPositionPdf(cpt)[0], getPositionPdf(cpt)[1]]
                 ax.axis('off')
                 ax.set_aspect('equal', 'box')
+                
+                cpt += 1
             
             #save the page 
             plt.tight_layout()

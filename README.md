@@ -29,5 +29,7 @@ You'll need to change the values of the parameters according to your needs.
 - **nb_squares**: number of squares to display on the map to verify their size and shape
 - **polygon_color**: the color which will be used for the display of the polygon
 - **test_mode**: set if you're in test mode where you will only take into account the first 2 polygons of your list
+- **start_year**: the starting year of the time serie
+- **square_size**: the size of the minimum square around the polygon in km
 
 Then in the `clip-time-series-polygons` folder, launch the `clip.ipynb` notebook and run its cells. 

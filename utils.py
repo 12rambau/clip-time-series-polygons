@@ -1,16 +1,18 @@
 from shapely.geometry import Point
 from math import sqrt
 import os
+from datetime import datetime
 
 import ee 
+
+from parameters import square_size
 
 ee.Initialize()
 
 #########################
 ####   constants      ###
 #########################
-start_year = 2005
-end_year = 2020
+end_year = datetime.now().year
 nb_line = 4
 nb_col = 5
 sources = ['landsat', 'sentinel']
@@ -41,8 +43,8 @@ def to_square(polygon):
     
     minx, miny, maxx, maxy = polygon.bounds
     
-    #1km in latitude (appro)
-    min_size = 0.009
+    #min size in latitude (appro)
+    min_size = square_size/111
     
     # get the centroid
     centroid = [(maxx+minx)/2, (maxy+miny)/2]

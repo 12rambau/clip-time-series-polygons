@@ -23,3 +23,10 @@ polygon_color = 'yellow'
 # will only take the first 2 polygons of your list 
 # use the test to check your band combo and polygon color before lauching huge downloads
 test_mode = True
+
+# the starting year of the time serie
+# minimum 2005, maximum now
+start_year = 2007
+
+# the size of the minimum square around the polygon in km
+square_size = 2
