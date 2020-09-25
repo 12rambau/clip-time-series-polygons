@@ -63,7 +63,7 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
                     task_config = {
                         'image':image,
                         'description': task_name,
-                        'scale': 30,
+                        'scale': getScale(satellites[year]),
                         'region': row['ee_geometry'],
                         'maxPixels': 10e12
                     }
