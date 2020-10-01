@@ -146,8 +146,8 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
                 data = data/3000
                 data = data.clip(0, 1)
                 data = np.transpose(data,[1,2,0])
-                
-                x_polygon, y_polygon = raw_polygons.iloc[index]['geometry'].exterior.coords.xy
+            
+                x_polygon, y_polygon = raw_polygons.loc[index]['geometry'].exterior.coords.xy
             
                 ax = axes[getPositionPdf(cpt)[0], getPositionPdf(cpt)[1]]
                 ax.imshow(data, interpolation='nearest', extent=[x_min, x_max, y_min, y_max])
