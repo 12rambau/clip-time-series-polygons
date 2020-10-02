@@ -28,6 +28,7 @@ You'll need to change the values of the parameters according to your needs.
 - **bands_combo**: bands combo you want to display (the available list of combo is written in the parameters file)
 - **nb_squares**: number of squares to display on the map to verify their size and shape
 - **polygon_color**: the color which will be used for the display of the polygon
+- **polygon_width**: the width that will be used for the display of the polygon
 - **test_mode**: set if you're in test mode where you will only take into account the first 2 polygons of your list
 - **start_year**: the starting year of the time serie
 - **square_size**: the size of the minimum square around the polygon in km

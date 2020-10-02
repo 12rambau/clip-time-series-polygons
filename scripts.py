@@ -151,7 +151,7 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
             
                 ax = axes[getPositionPdf(cpt)[0], getPositionPdf(cpt)[1]]
                 ax.imshow(data, interpolation='nearest', extent=[x_min, x_max, y_min, y_max])
-                ax.plot(x_polygon, y_polygon, color=polygon_color)
+                ax.plot(x_polygon, y_polygon, color=polygon_color, linewidth=polygon_width)
                 ax.set_title(str(year) + ' ' + getShortname(satellites[year]), x=.0, y=.9, fontsize='small', backgroundcolor='white', ha='left')
                 ax.axis('off')
                 ax.set_aspect('equal', 'box') 

@@ -15,9 +15,10 @@ bands_combo = 'Red, Green, Blue'
 #number of squares to display on the map to verify there size and shapes
 nb_squares = 10
 
-# the color wich will be used for the display of the polygon
+# the color and size wich will be used for the display of the polygon
 # You'll want to change it according to your band combo
 polygon_color = 'yellow'
+polygon_width = 1
 
 # set if you're in test mode 
 # will only take the first 2 polygons of your list 
