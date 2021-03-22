@@ -14,7 +14,7 @@ ee.Initialize()
 #########################
 end_year = datetime.now().year
 nb_line = 4
-nb_col = 5
+nb_col = 6
 sources = ['landsat', 'sentinel']
 
 ##############################
@@ -58,7 +58,7 @@ def to_square(polygon):
 ##########################
 def getPositionPdf(i):  
     """Return the position of the square on the pdf page"""
-    return [int(i/5), i%5]
+    return [int(i/nb_col), i%nb_col]
 
 def getSatellites(sources):
     
