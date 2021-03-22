@@ -111,6 +111,8 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
             )
             
             output.add_live_msg('Creating pages for pt {}'.format(int(row['id'])))
+            
+            nb_col, nb_line = get_dims(end_year-start_year)
                   
             fig, axes = plt.subplots(nb_line, nb_col, figsize=(11.69,8.27), dpi=500)
             fig.suptitle(page_title, fontsize=16, fontweight ="bold")
@@ -149,7 +151,7 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
             
                 x_polygon, y_polygon = raw_polygons.loc[index]['geometry'].exterior.coords.xy
             
-                ax = axes[getPositionPdf(cpt)[0], getPositionPdf(cpt)[1]]
+                ax = axes[getPositionPdf(cpt, nb_col)[0], getPositionPdf(cpt, nb_col)[1]]
                 ax.imshow(data, interpolation='nearest', extent=[x_min, x_max, y_min, y_max])
                 ax.plot(x_polygon, y_polygon, color=polygon_color, linewidth=polygon_width)
                 ax.set_title(str(year) + ' ' + getShortname(satellites[year]), x=.0, y=.9, fontsize='small', backgroundcolor='white', ha='left')
@@ -160,7 +162,7 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
             
             #finish the line with empty plots 
             while cpt < nb_line*nb_col:
-                ax = axes[getPositionPdf(cpt)[0], getPositionPdf(cpt)[1]]
+                ax = axes[getPositionPdf(cpt, nb_col)[0], getPositionPdf(cpt, nb_col)[1]]
                 ax.axis('off')
                 ax.set_aspect('equal', 'box')
                 
@@ -172,7 +174,7 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
             plt.close()
             
     #flush the tmp repository 
-    #shutil.rmtree(getTmpDir())
+    shutil.rmtree(getTmpDir())
     
     output.add_live_msg('PDF output finished', 'success')
     

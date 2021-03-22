@@ -2,6 +2,7 @@ from shapely.geometry import Point
 from math import sqrt
 import os
 from datetime import datetime
+from itertools import product
 
 import ee 
 
@@ -13,8 +14,6 @@ ee.Initialize()
 ####   constants      ###
 #########################
 end_year = datetime.now().year
-nb_line = 4
-nb_col = 6
 sources = ['landsat', 'sentinel']
 
 ##############################
@@ -38,6 +37,29 @@ def getTmpDir():
 ########################
 ##   functions        ##
 ########################
+def get_dims(N):
+    '''
+    I'm gonna check every combination from 1 to 20 lines and columns.
+    400 year of data max, I'll have a good life before anyone complains)
+    '''
+    
+    # A4 format in landscape
+    width = 11.69
+    heigh = 8.27
+
+    cols, lines = (None, None)
+    l = 0
+    for nb_col, nb_line in product(range(1, 21), range(1, 21)):
+    
+        l_tmp = min(width/nb_col, heigh/nb_line)
+    
+        if l_tmp > l and nb_col*nb_line > N:
+            l = l_tmp
+            cols = nb_col
+            lines = nb_line
+        
+    return (cols, lines)
+
 
 def to_square(polygon):
     
@@ -56,7 +78,7 @@ def to_square(polygon):
 ##########################
 ##     staelites inputs ##
 ##########################
-def getPositionPdf(i):  
+def getPositionPdf(i, nb_col):  
     """Return the position of the square on the pdf page"""
     return [int(i/nb_col), i%nb_col]
 
