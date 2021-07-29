@@ -13,12 +13,14 @@ ee.Initialize()
 #########################
 ####   constants      ###
 #########################
+
 end_year = datetime.now().year
 sources = ['landsat', 'sentinel']
 
 ##############################
 #####     folders          ###
 ##############################
+
 def create_folder(pathname):
     if not os.path.exists(pathname):
         os.makedirs(pathname)
@@ -37,6 +39,7 @@ def getTmpDir():
 ########################
 ##   functions        ##
 ########################
+
 def get_dims(N):
     '''
     I'm gonna check every combination from 1 to 20 lines and columns.
@@ -65,7 +68,7 @@ def to_square(polygon):
     
     minx, miny, maxx, maxy = polygon.bounds
     
-    #min size in latitude (appro)
+    # min size in latitude (appro)
     min_size = square_size/111
     
     # get the centroid
@@ -78,6 +81,7 @@ def to_square(polygon):
 ##########################
 ##     staelites inputs ##
 ##########################
+
 def getPositionPdf(i, nb_col):  
     """Return the position of the square on the pdf page"""
     return [int(i/nb_col), i%nb_col]
@@ -163,13 +167,13 @@ def getAvailableBands():
             'landsat_8': ['B7', 'B5', 'B3'],
             'sentinel_2': ['B12', 'B8', 'B3']
         },
-        'ndvi' : { #2 useful bands nir and red 
+        'ndvi' : { # 2 useful bands nir and red 
             'landsat_7': ['B4', 'B3'], 
             'landsat_5': ['B4', 'B3'],
             'landsat_8': ['B5', 'B4'],
             'sentinel_2': ['B8', 'B4']
         },
-        'ndwi' : { #2 useful bands nir and swir 
+        'ndwi' : { # 2 useful bands nir and swir 
             'landsat_7': ['B4', 'B5'], 
             'landsat_5': ['B4', 'B5'],
             'landsat_8': ['B5', 'B6'],
@@ -206,10 +210,10 @@ def getCloudMask(satelliteId):
     elif satelliteId == 'sentinel_2':
         def cloudMask(image):
             qa = image.select('QA60')
-            #Bits 10 and 11 are clouds and cirrus, respectively.
+            # Bits 10 and 11 are clouds and cirrus, respectively.
             cloudBitMask = (1 << 10)
             cirrusBitMask = (1 << 11)
-            #Both flags should be set to zero, indicating clear conditions.
+            # Both flags should be set to zero, indicating clear conditions.
             mask = qa.bitwiseAnd(cloudBitMask).eq(0).And(qa.bitwiseAnd(cirrusBitMask).eq(0))
     
             return image.updateMask(mask)#.divide(10000)
@@ -221,7 +225,7 @@ def getImage(sources, bands, mask, year):
     start = str(year) + '-01-01'
     end = str(year) + '-12-31'
     
-    #priority selector for satellites
+    # priority selector for satellites
     for satelliteId in getSatellites(sources):
         dataset = ee.ImageCollection(getSatellites(sources)[satelliteId]) \
             .filterDate(start, end) \

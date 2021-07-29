@@ -20,36 +20,36 @@ ee.Initialize()
 
 def createPDF(file, df, raw_polygons, bands, sources, output):
     
-    #get the filename
+    # get the filename
     filename = Path(file).stem
     
-    #extract the bands to use them in names 
+    # extract the bands to use them in names 
     name_bands = '_'.join(bands.split(', '))
     
-    #pdf name 
+    # pdf name 
     pdf_file = getResultDir() + '{}_{}.pdf'.format(filename, name_bands)
     
     if os.path.isfile(pdf_file):
         output.add_live_msg('Pdf already exist', 'success')
         return pdf_file
     
-    #start the drive handler 
+    # start the drive handler 
     drive_handler = gdrive() 
     
-    #create a filename list 
+    # create a filename list 
     descriptions = {}
     for year in range(start_year, end_year + 1):
         descriptions[year] = {}
         for index, row in df.iterrows():
             descriptions[year][row['id']] = '{}_{}_{}_pt_{}'.format(filename, name_bands, year, row['id'])
     
-    #load all the data in gdrive 
-    satellites = {} #contain the names of the used satellites
+    # load all the data in gdrive 
+    satellites = {} # contain the names of the used satellites
     task_list = []
     for year in range(start_year, end_year + 1):
         for index, row in df.iterrows():
         
-            #launch it only if the file is not in tmp, or in gdrive
+            # launch it only if the file is not in tmp, or in gdrive
             task_name = descriptions[year][row['id']]
             file = getTmpDir() + task_name + '.tif'
             
@@ -74,14 +74,14 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
                     task_list.append(task_name)
                     
     
-    #check the exportation evolution
+    # check the exportation evolution
     state = gee.custom_wait_for_completion(task_list, output)
     output.add_live_msg('Export to drive finished', 'success')
     time.sleep(2)
     
     output.add_live_msg('Retrieve to sepal')
     
-    #retreive all the file ids 
+    # retreive all the file ids 
     filesId = []
     for year in range(start_year, end_year + 1):
         for index, row in df.iterrows():
@@ -92,17 +92,17 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
             if not os.path.isfile(file):
                 filesId += drive_handler.get_files(task_name)
     
-    #download the files   
+    # download the files   
     output.add_live_msg('Download files')
     drive_handler.download_files(filesId, getTmpDir())     
     
-    #remove the files from gdrive 
+    # remove the files from gdrive 
     output.add_live_msg('Remove from gdrive')
     drive_handler.delete_files(filesId)            
     
-    #create the resulting pdf
+    # create the resulting pdf
     with PdfPages(pdf_file) as pdf:
-        #each point is display on one single page
+        # each point is display on one single page
         for index, row in df.iterrows():
             
             page_title = "Polygon_{} ({})".format(
@@ -117,14 +117,14 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
             fig, axes = plt.subplots(nb_line, nb_col, figsize=(11.69,8.27), dpi=500)
             fig.suptitle(page_title, fontsize=16, fontweight ="bold")
             
-            #display the images in a fig and export it as a pdf page
+            # display the images in a fig and export it as a pdf page
             cpt = 0
             for year in range(start_year, end_year + 1):
                 
-                #laod the file 
+                # laod the file 
                 file = getTmpDir() + descriptions[year][row['id']] + '.tif'                
     
-                #with rio.open(tmp_file) as f:
+                # with rio.open(tmp_file) as f:
                 with rio.open(file) as f:
                     data = f.read([1, 2, 3], masked=True)
                     x_min, y_min, x_max, y_max = list(f.bounds)
@@ -160,7 +160,7 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
                 
                 cpt += 1
             
-            #finish the line with empty plots 
+            # finish the line with empty plots 
             while cpt < nb_line*nb_col:
                 ax = axes[getPositionPdf(cpt, nb_col)[0], getPositionPdf(cpt, nb_col)[1]]
                 ax.axis('off')
@@ -168,12 +168,12 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
                 
                 cpt += 1
             
-            #save the page 
+            # save the page 
             plt.tight_layout()
             pdf.savefig(fig)
             plt.close()
             
-    #flush the tmp repository 
+    # flush the tmp repository 
     shutil.rmtree(getTmpDir())
     
     output.add_live_msg('PDF output finished', 'success')
