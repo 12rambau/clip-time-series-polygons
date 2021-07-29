@@ -17,7 +17,7 @@ def custom_wait_for_completion(task_description, output):
                     
         #search for the task in task_list
         for task in task_description:
-            current_task = gs.isTask(task)
+            current_task = gs.is_task(task)
             if current_task:
                 state = current_task.state
                 if state == 'RUNNING' or state == 'FAILED': 

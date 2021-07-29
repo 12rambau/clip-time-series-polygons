@@ -43,7 +43,7 @@ def getTmpDir():
 def get_dims(N):
     '''
     I'm gonna check every combination from 1 to 20 lines and columns.
-    400 year of data max, I'll have a good life before anyone complains)
+    400 year of data max, I'll have a good life before anyone complains
     '''
     
     # A4 format in landscape
