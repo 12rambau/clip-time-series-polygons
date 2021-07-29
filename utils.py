@@ -1,6 +1,6 @@
 from shapely.geometry import Point
 from math import sqrt
-import os
+from pathlib import Path
 from datetime import datetime
 from itertools import product
 
@@ -21,19 +21,11 @@ sources = ['landsat', 'sentinel']
 #####     folders          ###
 ##############################
 
-def create_folder(pathname):
-    if not os.path.exists(pathname):
-        os.makedirs(pathname)
-    return pathname
+result_dir = Path.home()/'clip_results'
+result_dir.mkdir(parents=True, exist_ok=True)
 
-def getResultDir():
-    pathname = os.path.join(os.path.expanduser('~'), 'clip_results') + '/'
-    return create_folder(pathname)
-
-def getTmpDir():
-    pathname = os.path.join(getResultDir(), 'tmp') + '/'
-    return create_folder(pathname)
-
+tmp_dir = Path.home()/'tmp'
+# no need to create it it's init when SEPAL starts an instance
 
 
 ########################
