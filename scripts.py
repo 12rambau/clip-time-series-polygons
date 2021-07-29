@@ -1,6 +1,6 @@
 from pathlib import Path
 import ee 
-import time
+from datetime import datetime as dt
 from urllib.request import urlretrieve
 import zipfile
 
@@ -16,6 +16,8 @@ from parameters import *
 ee.Initialize()
 
 def createPDF(file, df, raw_polygons, bands, sources, output):
+    
+    start = dt.now().replace(microsecond=0)
     
     # get the filename
     filename = Path(file).stem
@@ -49,7 +51,7 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
             
             image, satellites[year] = getImage(sources, bands, row['ee_geometry'], year)
             
-            output.add_live_msg('exporting year {} for point {}'.format(year, row['id']))
+            output.add_msg('exporting year {} for point {}'.format(year, row['id']))
             
             if not dst.is_file():
                 
@@ -81,7 +83,7 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
             
             page_title = f'Polygon_{row.id} ({row.name})'
             
-            output.add_live_msg(f'Creating pages for pt {row.id}')
+            output.add_msg(f'Creating pages for pt {row.id}')
             
             nb_col, nb_line = get_dims(end_year-start_year)
                   
@@ -146,6 +148,7 @@ def createPDF(file, df, raw_polygons, bands, sources, output):
             pdf.savefig(fig)
             plt.close()
     
-    output.add_live_msg('PDF output finished', 'success')
+    elapsed_time = dt.now().replace(microsecond=0)-start
+    output.add_live_msg(f'PDF output finished in {elapsed_time}', 'success')
     
     return pdf_file
